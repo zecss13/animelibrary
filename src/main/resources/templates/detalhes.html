@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${dadosApi.title}">Detalhes - AnimeList</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        body { display: flex; height: 100vh; background-color: #f4f6f9; color: #333; }
+        .sidebar { width: 260px; background-color: #343a40; color: white; display: flex; flex-direction: column; padding: 20px; box-shadow: 2px 0 5px rgba(0,0,0,0.1); }
+        .logo { font-size: 24px; font-weight: bold; margin-bottom: 40px; text-align: center; color: #ffc107; border-bottom: 1px solid #4b545c; padding-bottom: 20px; text-transform: uppercase; }
+        .menu-item { display: flex; align-items: center; text-decoration: none; color: #c2c7d0; padding: 12px 15px; margin-bottom: 5px; border-radius: 4px; transition: 0.3s; }
+        .menu-item:hover, .menu-item.active { background-color: #007bff; color: white; }
+        .menu-item i { margin-right: 15px; font-size: 20px; }
+        .menu-label { text-transform: uppercase; font-size: 12px; color: #adb5bd; margin-top: 20px; margin-bottom: 10px; padding-left: 10px; font-weight: bold; }
+        .btn-sair { margin-top: auto; background-color: #dc3545; color: white; text-align: center; padding: 10px; border-radius: 4px; text-decoration: none; }
+        .main-content { flex: 1; padding: 40px; overflow-y: auto; }
+        .anime-header { display: flex; gap: 30px; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin-bottom: 30px; }
+        .poster { width: 220px; border-radius: 4px; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
+        .info { flex: 1; }
+        .tag { background: #e9ecef; padding: 5px 10px; border-radius: 15px; font-size: 12px; font-weight: bold; color: #555; margin-right: 5px; }
+        .synopsis { font-size: 15px; color: #555; line-height: 1.6; margin-top: 20px; text-align: justify; }
+        .btn-add { background: #28a745; color: white; border: none; padding: 10px 25px; border-radius: 4px; cursor: pointer; font-size: 14px; display: inline-flex; align-items: center; gap: 5px; margin-top: 20px; transition: 0.2s; }
+        .btn-add:hover { background: #218838; transform: translateY(-2px); }
+        .reviews-section { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .review-card { border-bottom: 1px solid #eee; padding: 20px 0; }
+        .review-card:last-child { border-bottom: none; }
+        .review-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .review-author { font-weight: bold; font-size: 16px; color: #333; display: flex; align-items: center; gap: 10px; }
+        .avatar-circle { width: 30px; height: 30px; background: #007bff; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+        .nota-badge { background: transparent; color: #28a745; font-weight: bold; font-size: 16px; }
+        .review-text { color: #555; font-style: italic; background: #f8f9fa; padding: 15px; border-radius: 4px; border-left: 3px solid #dee2e6; }
+        .actions { display: flex; gap: 15px; font-size: 12px; margin-top: 5px; }
+        .action-link { text-decoration: none; font-weight: bold; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <div class="logo">Biblioteca Animes 🎬</div>
+        <div class="menu-label">Navegação</div>
+        <a th:href="@{/home}" class="menu-item"><i class="material-icons">home</i> Início</a>
+        <a th:href="@{/buscar}" class="menu-item active"><i class="material-icons">search</i> Buscar</a>
+        <a th:href="@{/minha-lista}" class="menu-item"><i class="material-icons">playlist_play</i> Minha Lista</a>
+        <a th:href="@{/perfil}" class="menu-item"><i class="material-icons">person</i> Meu Perfil</a>
+        
+        <div sec:authorize="hasRole('ADMIN')">
+            <div class="menu-label">Administração</div>
+            <a th:href="@{/admin/usuarios}" class="menu-item" style="color: #ffc107;"><i class="material-icons">admin_panel_settings</i> Usuários</a>
+            <a th:href="@{/admin/reviews}" class="menu-item"><i class="material-icons">rate_review</i> Moderação</a>
+        </div>
+        <a th:href="@{/logout}" class="btn-sair">Sair do Sistema</a>
+    </div>
+
+    <div class="main-content">
+
+        <div style="margin-bottom: 20px;">
+            <a th:if="${termoAnterior != null}" 
+               th:href="@{/buscar(anime=${termoAnterior})}" 
+               style="text-decoration: none; color: #555; font-weight: bold; display: flex; align-items: center; gap: 5px;">
+               <i class="material-icons">arrow_back</i> 
+               Voltar para resultados de "<span th:text="${termoAnterior}">Termo</span>"
+            </a>
+
+            <a th:if="${termoAnterior == null}" 
+               href="javascript:history.back()" 
+               style="text-decoration: none; color: #555; font-weight: bold; display: flex; align-items: center; gap: 5px;">
+               <i class="material-icons">arrow_back</i> Voltar
+            </a>
+        </div>
+        
+        <div class="anime-header">
+            <img th:src="${dadosApi.images.jpg.imageUrl}" class="poster">
+            <div class="info">
+                <h1 th:text="${dadosApi.title}" style="margin-bottom: 10px;">Título</h1>
+                <div>
+                    <span class="tag" th:text="${dadosApi.status}">Status</span>
+                    <span class="tag" th:text="'Episódios: ' + ${dadosApi.episodes}">Episódios</span>
+                </div>
+                
+                <p class="synopsis" th:text="${dadosApi.synopsis}">Sinopse...</p>
+                
+                <a th:href="'https://translate.google.com/?sl=en&tl=pt&text=' + ${dadosApi.synopsis} + '&op=translate'" 
+                   target="_blank" style="font-size: 12px; color: #007bff; text-decoration: none; display: block; margin-top: 5px;">
+                   🌐 Traduzir Sinopse
+                </a>
+
+                <form th:action="@{/adicionar-anime}" method="post">
+                    <input type="hidden" name="apiId" th:value="${dadosApi.malId}">
+                    <input type="hidden" name="titulo" th:value="${dadosApi.title}">
+                    <input type="hidden" name="imagemUrl" th:value="${dadosApi.images.jpg.imageUrl}">
+                    <input type="hidden" name="totalEpisodios" th:value="${dadosApi.episodes != null ? dadosApi.episodes : 0}">
+                    <button type="submit" class="btn-add">
+                        <i class="material-icons">add_circle</i> Adicionar à Minha Lista
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <div class="reviews-section">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 15px;">
+                <h2>Comentários da Comunidade</h2>
+                
+                <a th:href="@{/anime/{id}/nova-review(id=${dadosApi.malId}, termo=${termoAnterior})}" 
+                   style="background: #007bff; color: white; padding: 8px 15px; text-decoration: none; border-radius: 4px; font-size: 14px; display: flex; align-items: center; gap: 5px;">
+                   <i class="material-icons" style="font-size: 16px;">edit</i> Escrever Review
+                </a>
+            </div>
+
+            <div th:if="${reviews.empty}" style="text-align: center; color: #999; margin: 40px 0;">
+                <i class="material-icons" style="font-size: 40px; color: #ddd;">chat_bubble_outline</i>
+                <p>Ninguém avaliou este anime ainda. Seja o primeiro!</p>
+            </div>
+
+            <div class="review-card" th:each="review : ${reviews}">
+                <div class="review-header">
+                    <div class="review-author">
+                        <div class="avatar-circle" th:text="${review.usuario.nome.substring(0,1)}">A</div>
+                        <span th:text="${review.usuario.nome}">Nome</span>
+                    </div>
+                    <span class="nota-badge" th:text="${review.nota}">10.0</span>
+                </div>
+                
+                <p class="review-text" th:text="${review.texto}">Texto...</p>
+
+                <div class="actions" th:if="${usuarioLogado != null and (usuarioLogado.id == review.usuario.id or usuarioLogado.role == 'ADMIN')}">
+                    
+                    <a th:if="${usuarioLogado.id == review.usuario.id}"
+                       th:href="@{/anime/{apiId}/nova-review(apiId=${dadosApi.malId}, id=${review.id}, termo=${termoAnterior})}" 
+                       class="action-link" style="color: #007bff;">
+                       EDITAR
+                    </a>
+
+                    <form th:action="@{/deletar-review}" method="post" onsubmit="return confirm('Tem certeza?');" style="display: inline;">
+                        <input type="hidden" name="id" th:value="${review.id}">
+                        <button type="submit" class="action-link" style="background: none; border: none; color: #dc3545;">EXCLUIR</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

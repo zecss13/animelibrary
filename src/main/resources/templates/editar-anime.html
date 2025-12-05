@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Atualizar Progresso</title>
+    <style>
+        body { font-family: sans-serif; background-color: #f4f4f9; display: flex; justify-content: center; padding-top: 50px; }
+        .container { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 600px; display: flex; gap: 20px; }
+        .poster { width: 200px; border-radius: 5px; }
+        .form-area { flex-grow: 1; }
+        label { display: block; margin-top: 15px; color: #555; font-weight: bold; }
+        input, select { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        .btn-group { margin-top: 30px; display: flex; gap: 10px; }
+        .btn-save { flex: 1; background-color: #28a745; color: white; border: none; padding: 12px; border-radius: 4px; cursor: pointer; font-size: 16px; }
+        .btn-save:hover { background-color: #218838; }
+        .btn-delete { background-color: #dc3545; color: white; border: none; padding: 12px; border-radius: 4px; cursor: pointer; }
+        .btn-delete:hover { background-color: #c82333; }
+        .btn-back { display: block; margin-bottom: 20px; text-decoration: none; color: #666; }
+    </style>
+</head>
+<body>
+
+    <div style="display: block;">
+        <a th:href="@{/minha-lista}" class="btn-back">← Voltar para Lista</a>
+
+        <div class="container">
+            <div>
+                <img th:src="${item.anime.imagemUrl}" class="poster" alt="Capa">
+                <h3 th:text="${item.anime.titulo}" style="text-align: center; font-size: 16px;"></h3>
+            </div>
+
+            <div class="form-area">
+                <h2>Atualizar Progresso</h2>
+
+                <form th:action="@{/atualizar-anime}" method="post">
+                    <input type="hidden" name="id" th:value="${item.id}">
+
+                    <label>Status:</label>
+                    <select name="status">
+                        <option value="ASSISTINDO" th:selected="${item.status == 'ASSISTINDO'}">Assistindo</option>
+                        <option value="COMPLETO" th:selected="${item.status == 'COMPLETO'}">Assistido</option>
+                        <option value="PLANEJANDO" th:selected="${item.status == 'PLANEJANDO'}">Planejando assitir</option>
+                        <option value="DROPADO" th:selected="${item.status == 'DROPADO'}">Dropado</option>
+                    </select>
+
+                    <label>Episódios Assistidos:</label>
+                    <input type="number" name="episodios" th:value="${item.episodiosAssistidos}" min="0">
+
+                    <label>Sua Nota (0 a 10):</label>
+                    <input type="number" name="nota" th:value="${item.notaPessoal}" min="0" max="10" step="0.5">
+
+                    <label>Seu Comentário Pessoal:</label>
+
+                    <textarea name="comentario" rows="4" placeholder="Adicionar comentarios?" 
+                              th:text="${item.comentario}"
+                              style="width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px; resize: vertical;">
+                    </textarea>
+
+                    <div class="btn-group">
+                        <button type="submit" name="acao" value="salvar" class="btn-save">Salvar Alterações</button>
+                        
+                        <button type="submit" name="acao" value="excluir" class="btn-delete" 
+                                onclick="return confirm('Tem certeza que quer remover este anime?')">
+                            🗑️
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

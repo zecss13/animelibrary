@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Escrever Review</title>
+    <style>
+        body { font-family: sans-serif; background-color: #f4f6f9; display: flex; justify-content: center; padding-top: 40px; }
+        .container { background: white; padding: 40px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 500px; }
+        .header { text-align: center; margin-bottom: 20px; }
+        .header img { width: 100px; border-radius: 4px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        .header h2 { margin: 10px 0 5px 0; font-size: 18px; color: #333; }
+        label { display: block; margin-top: 15px; font-weight: bold; color: #555; }
+        input, textarea { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-family: sans-serif; }
+        button { margin-top: 20px; width: 100%; padding: 12px; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; font-weight: bold; }
+        button:hover { background-color: #0056b3; }     
+        .btn-cancel { display: block; text-align: center; margin-top: 15px; color: #666; text-decoration: none; font-size: 14px; }
+        .btn-cancel:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <img th:src="${anime.images.jpg.imageUrl}" alt="Capa">
+        <h2 th:text="${review != null} ? 'Editar sua Análise' : 'Nova Review'">Review</h2>
+        <h3 th:text="${anime.title}" style="font-size: 14px; color: #666; font-weight: normal;">Título do Anime</h3>
+    </div>
+
+    <form th:action="@{/salvar-review}" method="post">
+        <input type="hidden" name="id" th:value="${review?.id}">
+
+        <input type="hidden" name="apiId" th:value="${anime.malId}">
+        <input type="hidden" name="titulo" th:value="${anime.title}">
+        <input type="hidden" name="imagemUrl" th:value="${anime.images.jpg.imageUrl}">
+
+        <input type="hidden" name="termo" th:value="${termo}">
+
+        <label>Nota (0 a 10):</label>
+        <input type="number" name="nota" min="0" max="10" step="0.5" required placeholder="Ex: 8.5"
+            th:value="${review?.nota}">
+
+        <label>Sua Análise:</label>
+        <textarea name="texto" rows="6" required placeholder="Escreva o que você achou..."
+                  th:text="${review?.texto}"></textarea>
+
+        <button type="submit" th:text="${review != null} ? 'Salvar Alterações' : 'Publicar Review'">Publicar</button>
+        
+        <a th:href="@{/anime/{id}(id=${anime.malId}, termo=${termo})}" class="btn-cancel">Cancelar</a>
+    </form>
+</div>
+
+</body>
+</html>

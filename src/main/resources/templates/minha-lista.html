@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title>Minha Lista - Biblioteca Animes</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        body { display: flex; height: 100vh; background-color: #f4f6f9; color: #333; }
+        .sidebar { width: 260px; background-color: #343a40; color: white; display: flex; flex-direction: column; padding: 20px; box-shadow: 2px 0 5px rgba(0,0,0,0.1); }
+        .logo { font-size: 24px; font-weight: bold; margin-bottom: 40px; text-align: center; color: #ffc107; border-bottom: 1px solid #4b545c; padding-bottom: 20px; text-transform: uppercase; }
+        .menu-item { display: flex; align-items: center; text-decoration: none; color: #c2c7d0; padding: 12px 15px; margin-bottom: 5px; border-radius: 4px; transition: 0.3s; }
+        .menu-item:hover, .menu-item.active { background-color: #007bff; color: white; }
+        .menu-item i { margin-right: 15px; font-size: 20px; }
+        .menu-label { text-transform: uppercase; font-size: 12px; color: #adb5bd; margin-top: 20px; margin-bottom: 10px; padding-left: 10px; font-weight: bold; }
+        .btn-sair { margin-top: auto; background-color: #dc3545; color: white; text-align: center; padding: 10px; border-radius: 4px; text-decoration: none; }
+        .btn-sair:hover { background-color: #c82333; }
+        .main-content { flex: 1; padding: 40px; overflow-y: auto; }
+        .grid { display: flex; flex-wrap: wrap; gap: 20px; }
+        .card { background: white; width: 220px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); overflow: hidden; position: relative; transition: transform 0.2s; }
+        .card:hover { transform: translateY(-5px); }
+        .card img { width: 100%; height: 300px; object-fit: cover; }
+        .status-badge { position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.7); color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; }
+        .card-content { padding: 15px; }
+        .card-title { font-weight: bold; margin-bottom: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #333; }
+        .h1 { margin-bottom: 10px; font-size: 2rem; color: #333; }
+        .btn-action { display: block; text-align: center; background: #007bff; color: white; text-decoration: none; padding: 8px; border-radius: 4px; font-size: 14px; margin-top: 10px; }
+        .btn-action:hover { background-color: #0056b3; }
+        
+        .comentario-box { background: #f8f9fa; padding: 8px; margin: 10px 0; border-radius: 4px; font-size: 12px; color: #666; font-style: italic; border-left: 3px solid #ffc107; }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <div class="logo">Biblioteca Animes 🎬</div>
+        <div class="menu-label">Navegação</div>
+        <a th:href="@{/home}" class="menu-item"><i class="material-icons">home</i> Início</a>
+        <a th:href="@{/buscar}" class="menu-item"><i class="material-icons">search</i> Buscar</a>
+        <a th:href="@{/minha-lista}" class="menu-item active"><i class="material-icons">playlist_play</i> Minha Lista</a>
+        <a th:href="@{/perfil}" class="menu-item"><i class="material-icons">person</i> Meu Perfil</a>
+        
+        <div sec:authorize="hasRole('ADMIN')">
+            <div class="menu-label">Administração</div>
+
+            <a th:href="@{/admin/usuarios}" class="menu-item" style="color: #ffc107;">
+                <i class="material-icons">admin_panel_settings</i> Usuários
+            </a>
+
+            <a th:href="@{/admin/reviews}" class="menu-item">
+                <i class="material-icons">rate_review</i> Moderação
+            </a>
+            
+        </div>
+
+        <a th:href="@{/logout}" class="btn-sair">Sair do Sistema</a>
+        
+    </div>
+
+    <div class="main-content">
+        <h1 style="margin-bottom: 10px;">Meus Animes</h1>
+        <p style="color: #666; margin-bottom: 20px;">Veja e controle toda sua lista de animes pessoais.</p>
+
+        <div th:if="${lista.empty}" style="text-align: center; margin-top: 50px; color: #777;">
+            <p style="font-size: 18px;">Sua lista está vazia.</p>
+            <a th:href="@{/buscar}" style="color: #007bff;">Ir buscar animes</a>
+        </div>
+
+        <div class="grid">
+            <div class="card" th:each="item : ${lista}">
+                <div class="status-badge" th:text="${item.status}" 
+                     th:style="${item.status == 'COMPLETO' ? 'background: #28a745;' : ''}">STATUS</div>
+                
+                <a th:href="@{/anime/{id}(id=${item.anime.apiId})}" style="text-decoration: none;">
+                    <img th:src="${item.anime.imagemUrl}" alt="Poster">
+                </a>
+                
+                <div class="card-content">
+                    <div class="card-title" th:text="${item.anime.titulo}">Nome</div>
+                    
+                    <div style="font-size: 13px; color: #666;">
+                        Episódios: <span th:text="${item.episodiosAssistidos}">0</span>
+                    </div>
+                    <div style="font-size: 13px; color: #28a745; font-weight: bold;">
+                        Nota: <span th:text="${item.notaPessoal != null ? item.notaPessoal : '-'}">-</span>
+                    </div>
+
+                    <div th:if="${item.comentario != null and !item.comentario.isEmpty()}" class="comentario-box">
+                        "<span th:text="${item.comentario}">...</span>"
+                    </div>
+
+                    <a th:href="@{/editar/{id}(id=${item.id})}" class="btn-action">Atualizar</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

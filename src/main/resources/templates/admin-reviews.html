@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title>Moderação de Reviews - Admin</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        body { display: flex; height: 100vh; background-color: #f4f6f9; color: #333; }
+        .sidebar { width: 260px; background-color: #343a40; color: white; display: flex; flex-direction: column; padding: 20px; box-shadow: 2px 0 5px rgba(0,0,0,0.1); }
+        .logo { font-size: 24px; font-weight: bold; margin-bottom: 40px; text-align: center; color: #ffc107; border-bottom: 1px solid #4b545c; padding-bottom: 20px; text-transform: uppercase; }
+        .menu-item { display: flex; align-items: center; text-decoration: none; color: #c2c7d0; padding: 12px 15px; margin-bottom: 5px; border-radius: 4px; transition: 0.3s; }
+        .menu-item:hover, .menu-item.active { background-color: #007bff; color: white; }
+        .menu-item i { margin-right: 15px; font-size: 20px; }
+        .menu-label { text-transform: uppercase; font-size: 12px; color: #adb5bd; margin-top: 20px; margin-bottom: 10px; padding-left: 10px; font-weight: bold; }
+        .btn-sair { margin-top: auto; background-color: #dc3545; color: white; text-align: center; padding: 10px; border-radius: 4px; text-decoration: none; } 
+        .main-content { flex: 1; padding: 40px; overflow-y: auto; }
+        table { width: 100%; border-collapse: collapse; background: white; box-shadow: 0 2px 5px rgba(0,0,0,0.05); border-radius: 8px; overflow: hidden; }
+        th { background: #f8f9fa; text-align: left; padding: 15px; border-bottom: 2px solid #eee; font-size: 13px; color: #666; text-transform: uppercase; }
+        td { padding: 15px; border-bottom: 1px solid #eee; vertical-align: top; }
+        .comment-box { background: #f8f9fa; padding: 10px; border-radius: 4px; border-left: 3px solid #007bff; font-style: italic; color: #555; font-size: 14px; margin-top: 5px; }
+        .btn-delete { color: #dc3545; background: none; border: none; cursor: pointer; font-weight: bold; display: flex; align-items: center; gap: 5px; }
+        .btn-delete:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <div class="logo">Biblioteca Animes 🎬</div>
+        <div class="menu-label">Navegação</div>
+        <a th:href="@{/home}" class="menu-item"><i class="material-icons">home</i> Início</a>
+        <a th:href="@{/buscar}" class="menu-item"><i class="material-icons">search</i> Buscar</a>
+        <a th:href="@{/minha-lista}" class="menu-item"><i class="material-icons">playlist_play</i> Minha Lista</a>
+        <a th:href="@{/perfil}" class="menu-item"><i class="material-icons">person</i> Meu Perfil</a>
+        
+        <div sec:authorize="hasRole('ADMIN')">
+            <div class="menu-label">Administração</div>
+
+            <a th:href="@{/admin/usuarios}" class="menu-item">
+                <i class="material-icons">admin_panel_settings</i> Usuários
+            </a>
+
+            <a th:href="@{/admin/reviews}" class="menu-item active" style="color: #ffc107;">
+                <i class="material-icons">rate_review</i> Moderação
+            </a>
+        </div>
+
+        <a th:href="@{/logout}" class="btn-sair">Sair do Sistema</a>
+
+    </div>
+
+    <div class="main-content">
+        <h1>Moderação de Comentários</h1>
+        <p style="color: #666; margin-bottom: 30px;">Veja e apague opiniões da comunidade.</p>
+
+        <table>
+            <thead>
+                <tr>
+                    <th width="20%">Usuário / Anime</th>
+                    <th width="60%">Conteúdo</th>
+                    <th width="10%">Nota</th>
+                    <th width="10%">Ação</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="review : ${listaReviews}">
+                    <td>
+                        <div style="font-weight: bold;" th:text="${review.usuario.nome}">Nome</div>
+                        <div style="font-size: 12px; color: #888;">no anime:</div>
+                        <a th:href="@{/anime/{id}(id=${review.anime.apiId})}" th:text="${review.anime.titulo}" style="font-size: 13px; font-weight: bold; color: #007bff; text-decoration: none;">Anime</a>
+                    </td>
+                    <td>
+                        <div class="comment-box" th:text="${review.texto}">Texto...</div>
+                        <div style="font-size: 11px; color: #999; margin-top: 5px;" th:text="${#temporals.format(review.dataPostagem, 'dd/MM/yyyy HH:mm')}">Data</div>
+                    </td>
+                    <td>
+                        <span style="font-weight: bold; font-size: 16px; color: #28a745;" th:text="${review.nota}">10</span>
+                    </td>
+                    <td>
+                        <form th:action="@{/deletar-review}" method="post" onsubmit="return confirm('Apagar este comentário permanentemente?');">
+                            <input type="hidden" name="id" th:value="${review.id}">
+                            
+                            <input type="hidden" name="origem" value="admin">
+                            
+                            <button type="submit" class="btn-delete"><i class="material-icons" style="font-size: 18px;">delete</i> Apagar</button>
+                        </form>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+</body>
+</html>
